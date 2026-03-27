@@ -154,8 +154,9 @@ int send_init_packet(peerinfo_t peer, char *fpath, FILE *stream) {
 }
 
 int recv_file(int sock) {
-    peerinfo_t peer;
+    peerinfo_t peer = {0};
     peer.sock = sock;
+    peer.addr_len = sizeof(peer.addr);
 
     // Receive START packet
     packet_t p;
@@ -169,7 +170,10 @@ int recv_file(int sock) {
     uint32_t fsize;
 
     extract_start_data(&p, fname, &fsize);
-    
+
+    FILE *f = fopen(fname, "wb");
+
+    int bytes_written;
     // Receive DATA packets
     while (1) {
         if (recv_packet(peer, &p) == -1) {
@@ -181,11 +185,21 @@ int recv_file(int sock) {
                 printf("INFO: END packet!\n");
             }
             break;
+        } else if (p.type == DATA) {
+            if (VERBOSE) {
+                printf("INFO: DATA packet: %u\n", p.data_len);
+            }
+            bytes_written = fwrite(p.data, sizeof(char), p.data_len, f);
+            if (bytes_written == 0) {
+                fprintf(stderr, "ERROR: recv_file: Writing file failed!\n");
+                fclose(f);
+            }
         }
-        
-        // TODO: Finish   
+
+        // else { invalid packet }
     }
 
+    fclose(f);
     return 0;
 }
 
