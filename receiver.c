@@ -70,18 +70,9 @@ int main() {
     
     printf("Waiting...\n");
 
-    peerinfo_t peer;
-    peer.sock = my_socket;
-    packet_t pck;
-
-    if (recv_init_packet(&peer, &pck) == -1) {
+    if (recv_file(my_socket) == -1) {
         return 1;
     }
-    
-    char ipstr[INET6_ADDRSTRLEN];
-    inet_ntop(AF_INET, &peer.addr->sin_addr, ipstr, sizeof(ipstr));
-
-    printf("addr: %s\n", ipstr);
 
     printf("Done\n");
     

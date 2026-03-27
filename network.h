@@ -56,7 +56,7 @@ typedef struct packet {
 
 typedef struct peerinfo {
     int sock; // socket to peer
-    struct sockaddr_in *addr; // peer address
+    struct sockaddr_in addr; // peer address
     socklen_t addr_len; // peer address length
 } peerinfo_t;
 

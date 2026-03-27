@@ -69,7 +69,7 @@ int main() {
 
     printf("sa_family: %u\n", p->ai_addr->sa_family);
     peer.sock = my_socket;
-    peer.addr = (struct sockaddr_in *)p->ai_addr;
+    memcpy(&peer.addr, p->ai_addr, sizeof(struct sockaddr_in));
     peer.addr_len = p->ai_addrlen;
 
     // TODO: fpath instead and extract fname
@@ -80,11 +80,11 @@ int main() {
     
     printf("Sending file: %s\n", fname);
 
-    FILE *f = fopen(fname, "rb");
+    if (send_file(peer, fname) == -1) {
+        close(my_socket);
+        return 1;
+    }
 
-    send_init_packet(peer, fname, f);
-
-    close(my_socket);   
-    fclose(f); 
+    close(my_socket);
     return 0;
 }

@@ -75,6 +75,10 @@ int send_packet(peerinfo_t peer, packet_t *p, char *buffer) {
         if (bytes_sent == -1) {
             return -1;
         }
+
+        if (VERBOSE) {
+            printf("INFO: packet type %d sent!\n", p->type);
+        }
     
         int status = recv_ack(peer);
         if (status == 1) { // ACK not received
@@ -103,7 +107,7 @@ int recv_ack(peerinfo_t peer) {
         // ACK timeout
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
             if (VERBOSE) {
-                printf("INFO: ACK not received! Resending packet...\n");
+                printf("\nINFO: ACK not received! Resending packet...\n");
             }
             return 1;
         }
@@ -114,7 +118,7 @@ int recv_ack(peerinfo_t peer) {
 
     // Check peer address
     if (peer.addr_len != new_addr_len ||
-        ipcmp(peer.addr, &new_addr) != 0
+        ipcmp(&peer.addr, &new_addr) != 0
     ) {
         return 1;
     }
@@ -124,7 +128,7 @@ int recv_ack(peerinfo_t peer) {
     }
 
     if (VERBOSE) {
-        printf("INFO: ACK received! Continuing...\n");  
+        printf("\tINFO: ACK received!\n");  
     }
     return 0;
 }
@@ -165,9 +169,20 @@ int recv_file(int sock) {
     uint32_t fsize;
 
     extract_start_data(&p, fname, &fsize);
-
+    
     // Receive DATA packets
     while (1) {
+        if (recv_packet(peer, &p) == -1) {
+            return -1;
+        }
+
+        if (p.type == END) {
+            if (VERBOSE) {
+                printf("INFO: END packet!\n");
+            }
+            break;
+        }
+        
         // TODO: Finish   
     }
 
@@ -191,12 +206,13 @@ int recv_packet(peerinfo_t peer, packet_t *p) {
 
     // Check peer address
     if (peer.addr_len != new_addr_len ||
-        ipcmp(peer.addr, &new_addr) != 0
+        ipcmp(&peer.addr, &new_addr) != 0
     ) {
         return 1;
     }
 
     if (send_ack(peer) == -1) {
+        perror("send_ack");
         fprintf(stderr, "ERROR: recv_packet: Failed to send ACK!\n");
         return -1;
     }
@@ -242,6 +258,7 @@ int recv_init_packet(peerinfo_t *peer, packet_t *p) {
     }
 
     if (send_ack(*peer) == -1) {
+        perror("recv_init_packet");
         fprintf(stderr, "ERROR: recv_init_packet: Failed to send ACK!\n");
         return -1;
     }
