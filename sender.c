@@ -25,10 +25,12 @@ int main() {
     scanf("%s", receiver_addr);
     getchar(); // Consume '\n'
 
-    if (getaddrinfo("localhost", PORT, &hints, &res) != 0) {
+    if (getaddrinfo(receiver_addr, PORT, &hints, &res) != 0) {
         fprintf(stderr, "ERROR: getaddrinfo() call failed!\n");
         return 1;
     }
+
+    printf("Sending to: %s\n", receiver_addr);
     
     int my_socket;
     
@@ -42,8 +44,6 @@ int main() {
 
         break;
     }
-    
-    freeaddrinfo(res);
 
     struct timeval tv;
     tv.tv_sec = ACK_TIMEOUT;
@@ -82,6 +82,9 @@ int main() {
         return 1;
     }
 
+    printf("File transmitted successfully!\n");
+
+    freeaddrinfo(res);
     close(my_socket);
     return 0;
 }

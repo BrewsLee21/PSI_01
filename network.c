@@ -66,8 +66,7 @@ int send_file(peerinfo_t peer, char *fpath) {
         return -1;
     }
 
-    printf("File transmitted successfully!\n");
-    
+    fclose(f);
     return 0;
 }
 
