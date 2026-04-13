@@ -263,8 +263,10 @@ int send_ack(peerinfo_t peer) {
 int recv_init_packet(peerinfo_t *peer, packet_t *p) {
     char buffer[MAX_PACKET_BUFFER_SIZE];
 
-    
+
+    printf("Before");
     int msg_len = recvfrom(peer->sock, buffer, MAX_PACKET_BUFFER_SIZE, 0, (struct sockaddr *)&peer->addr, &peer->addr_len);
+    printf("After");
 
     if (msg_len == -1) {
         perror("recvfrom");
